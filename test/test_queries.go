@@ -12,13 +12,13 @@ import (
 )
 
 // testClientPair tests that the client for src on dst and dst on src are the only clients on those chains
-func testClientPair(t *testing.T, src, dst *ry.Chain) {
+func testClientPair(t *testing.T, src, dst *ry.CosmosChain) {
 	testClient(t, src, dst)
 	testClient(t, dst, src)
 }
 
 // testClient queries client for existence of dst on src
-func testClient(t *testing.T, src, dst *ry.Chain) {
+func testClient(t *testing.T, src, dst *ry.CosmosChain) {
 	srch, err := src.GetLatestLightHeight()
 	require.NoError(t, err)
 	var (
@@ -41,13 +41,13 @@ func testClient(t *testing.T, src, dst *ry.Chain) {
 }
 
 // testConnectionPair tests that the only connection on src and dst is between the two chains
-func testConnectionPair(t *testing.T, src, dst *ry.Chain) {
+func testConnectionPair(t *testing.T, src, dst *ry.CosmosChain) {
 	testConnection(t, src, dst)
 	testConnection(t, dst, src)
 }
 
 // testConnection tests that the only connection on src has a counterparty that is the connection on dst
-func testConnection(t *testing.T, src, dst *ry.Chain) {
+func testConnection(t *testing.T, src, dst *ry.CosmosChain) {
 	conns, err := src.QueryConnections(0, 1000)
 	require.NoError(t, err)
 	require.Equal(t, len(conns.Connections), 1)
@@ -69,13 +69,13 @@ func testConnection(t *testing.T, src, dst *ry.Chain) {
 }
 
 // testChannelPair tests that the only channel on src and dst is between the two chains
-func testChannelPair(t *testing.T, src, dst *ry.Chain) {
+func testChannelPair(t *testing.T, src, dst *ry.CosmosChain) {
 	testChannel(t, src, dst)
 	testChannel(t, dst, src)
 }
 
 // testChannel tests that the only channel on src is a counterparty of dst
-func testChannel(t *testing.T, src, dst *ry.Chain) {
+func testChannel(t *testing.T, src, dst *ry.CosmosChain) {
 	chans, err := src.QueryChannels(0, 1000)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(chans.Channels))

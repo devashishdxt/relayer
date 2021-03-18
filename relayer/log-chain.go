@@ -11,7 +11,7 @@ import (
 )
 
 // LogFailedTx takes the transaction and the messages to create it and logs the appropriate data
-func (c *Chain) LogFailedTx(res *sdk.TxResponse, err error, msgs []sdk.Msg) {
+func (c *CosmosChain) LogFailedTx(res *sdk.TxResponse, err error, msgs []sdk.Msg) {
 	if c.debug {
 		c.Log(fmt.Sprintf("- [%s] -> sending transaction:", c.ChainID))
 		for _, msg := range msgs {
@@ -38,16 +38,16 @@ func (c *Chain) LogFailedTx(res *sdk.TxResponse, err error, msgs []sdk.Msg) {
 }
 
 // LogSuccessTx take the transaction and the messages to create it and logs the appropriate data
-func (c *Chain) LogSuccessTx(res *sdk.TxResponse, msgs []sdk.Msg) {
+func (c *CosmosChain) LogSuccessTx(res *sdk.TxResponse, msgs []sdk.Msg) {
 	c.logger.Info(fmt.Sprintf("✔ [%s]@{%d} - msg(%s) hash(%s)", c.ChainID, res.Height, getMsgAction(msgs), res.TxHash))
 }
 
-func (c *Chain) logPacketsRelayed(dst *Chain, num int) {
+func (c *CosmosChain) logPacketsRelayed(dst *CosmosChain, num int) {
 	dst.Log(fmt.Sprintf("★ Relayed %d packets: [%s]port{%s}->[%s]port{%s}",
 		num, dst.ChainID, dst.PathEnd.PortID, c.ChainID, c.PathEnd.PortID))
 }
 
-func logChannelStates(src, dst *Chain, srcChan, dstChan *chantypes.QueryChannelResponse) {
+func logChannelStates(src, dst *CosmosChain, srcChan, dstChan *chantypes.QueryChannelResponse) {
 	src.Log(fmt.Sprintf("- [%s]@{%d}chan(%s)-{%s} : [%s]@{%d}chan(%s)-{%s}",
 		src.ChainID,
 		MustGetHeight(srcChan.ProofHeight),
@@ -60,7 +60,7 @@ func logChannelStates(src, dst *Chain, srcChan, dstChan *chantypes.QueryChannelR
 	))
 }
 
-func logConnectionStates(src, dst *Chain, srcConn, dstConn *conntypes.QueryConnectionResponse) {
+func logConnectionStates(src, dst *CosmosChain, srcConn, dstConn *conntypes.QueryConnectionResponse) {
 	src.Log(fmt.Sprintf("- [%s]@{%d}conn(%s)-{%s} : [%s]@{%d}conn(%s)-{%s}",
 		src.ChainID,
 		MustGetHeight(srcConn.ProofHeight),
@@ -73,12 +73,12 @@ func logConnectionStates(src, dst *Chain, srcConn, dstConn *conntypes.QueryConne
 	))
 }
 
-func (c *Chain) logCreateClient(dst *Chain, dstH int64) {
+func (c *CosmosChain) logCreateClient(dst *CosmosChain, dstH int64) {
 	c.Log(fmt.Sprintf("- [%s] -> creating client on %s for %s header-height{%d} trust-period(%s)",
 		c.ChainID, c.ChainID, dst.ChainID, dstH, dst.GetTrustingPeriod()))
 }
 
-func (c *Chain) logTx(events map[string][]string) {
+func (c *CosmosChain) logTx(events map[string][]string) {
 	hash := ""
 	if len(events["tx.hash"]) > 0 {
 		hash = events["tx.hash"][0]
@@ -107,13 +107,13 @@ func getTxActions(act []string) string {
 	return strings.TrimSuffix(out, ",")
 }
 
-func (c *Chain) logRetryQueryPacketAcknowledgements(height uint64, n uint, err error) {
+func (c *CosmosChain) logRetryQueryPacketAcknowledgements(height uint64, n uint, err error) {
 	if c.debug {
 		c.Log(fmt.Sprintf("- [%s]@{%d} - try(%d/%d) query packet acknowledgements: %s",
 			c.ChainID, height, n+1, rtyAttNum, err))
 	}
 }
 
-func (c *Chain) errQueryUnrelayedPacketAcks() error {
+func (c *CosmosChain) errQueryUnrelayedPacketAcks() error {
 	return fmt.Errorf("no error on QueryPacketUnrelayedAcknowledgements for %s, however response is nil", c.ChainID)
 }

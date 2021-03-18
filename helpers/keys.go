@@ -12,7 +12,7 @@ type KeyOutput struct {
 }
 
 // KeyAddOrRestore is a helper function for add key and restores key when mnemonic is passed
-func KeyAddOrRestore(chain *relayer.Chain, keyName string, coinType uint32, mnemonic ...string) (KeyOutput, error) {
+func KeyAddOrRestore(chain *relayer.CosmosChain, keyName string, coinType uint32, mnemonic ...string) (KeyOutput, error) {
 	var mnemonicStr string
 	var err error
 

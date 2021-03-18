@@ -321,7 +321,7 @@ func filesAdd(dir string) (cfg *Config, err error) {
 	}
 	cfg = config
 	for _, f := range files {
-		c := &relayer.Chain{}
+		c := &relayer.CosmosChain{}
 		pth := fmt.Sprintf("%s/%s", dir, f.Name())
 		if f.IsDir() {
 			fmt.Printf("directory at %s, skipping...\n", pth)
@@ -357,7 +357,7 @@ func filesAdd(dir string) (cfg *Config, err error) {
 
 func fileInputAdd(file string) (cfg *Config, err error) {
 	// If the user passes in a file, attempt to read the chain config from that file
-	c := &relayer.Chain{}
+	c := &relayer.CosmosChain{}
 	if _, err := os.Stat(file); err != nil {
 		return nil, err
 	}
@@ -379,7 +379,7 @@ func fileInputAdd(file string) (cfg *Config, err error) {
 }
 
 func userInputAdd(cmd *cobra.Command) (cfg *Config, err error) {
-	c := &relayer.Chain{}
+	c := &relayer.CosmosChain{}
 
 	var value string
 	fmt.Println("ChainID (i.e. cosmoshub2):")
@@ -465,7 +465,7 @@ func urlInputAdd(rawurl string) (cfg *Config, err error) {
 	}
 	defer resp.Body.Close()
 
-	var c *relayer.Chain
+	var c *relayer.CosmosChain
 	d := json.NewDecoder(resp.Body)
 	d.DisallowUnknownFields()
 	err = d.Decode(c)
@@ -515,7 +515,7 @@ type chainStatusResponse struct {
 	Balance bool `json:"balance"`
 }
 
-func (cs chainStatusResponse) Populate(c *relayer.Chain) chainStatusResponse {
+func (cs chainStatusResponse) Populate(c *relayer.CosmosChain) chainStatusResponse {
 	_, err := c.GetAddress()
 	if err == nil {
 		cs.Key = true
@@ -601,7 +601,7 @@ func PostChainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addChainByRequest(request addChainRequest, chainID string) (cfg *Config, err error) {
-	c := &relayer.Chain{}
+	c := &relayer.CosmosChain{}
 
 	if c, err = c.Update("chain-id", chainID); err != nil {
 		return nil, err

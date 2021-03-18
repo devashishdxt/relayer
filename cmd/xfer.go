@@ -104,7 +104,7 @@ $ %s tx raw send ibc-0 ibc-1 100000stake cosmos1skjwj5whet0lpe65qaq4rpq03hjxlwd9
 	return timeoutFlags(pathFlag(cmd))
 }
 
-func setPathsFromArgs(src, dst *relayer.Chain, name string) (*relayer.Path, error) {
+func setPathsFromArgs(src, dst *relayer.CosmosChain, name string) (*relayer.Path, error) {
 	// Find any configured paths between the chains
 	paths, err := config.Paths.PathsFromChains(src.ChainID, dst.ChainID)
 	if err != nil {

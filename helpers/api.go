@@ -22,7 +22,7 @@ func SuccessJSONResponse(status int, v interface{}, w http.ResponseWriter) {
 }
 
 // SuccessProtoResponse prepares data and writes a HTTP success
-func SuccessProtoResponse(status int, chain *relayer.Chain, v proto.Message, w http.ResponseWriter) {
+func SuccessProtoResponse(status int, chain *relayer.CosmosChain, v proto.Message, w http.ResponseWriter) {
 	out, err := chain.Encoding.Marshaler.MarshalJSON(v)
 	if err != nil {
 		WriteErrorResponse(http.StatusInternalServerError, err, w)
@@ -60,7 +60,7 @@ func WriteErrorResponse(statusCode int, err error, w http.ResponseWriter) {
 }
 
 // ParseHeightFromRequest parse height from query params and if not found, returns latest height
-func ParseHeightFromRequest(r *http.Request, chain *relayer.Chain) (int64, error) {
+func ParseHeightFromRequest(r *http.Request, chain *relayer.CosmosChain) (int64, error) {
 	heightStr := strings.TrimSpace(r.URL.Query().Get("height"))
 
 	if len(heightStr) == 0 {

@@ -13,7 +13,7 @@ import (
 // GetIBCCreateClientHeader updates the off chain tendermint light client on source
 // and returns an IBC Update Header which can be used to create an on-chain
 // light client on counterparty chain.
-func (c *Chain) GetIBCCreateClientHeader() (*tmclient.Header, error) {
+func (c *CosmosChain) GetIBCCreateClientHeader() (*tmclient.Header, error) {
 	lightBlock, err := c.UpdateLightClient()
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (c *Chain) GetIBCCreateClientHeader() (*tmclient.Header, error) {
 // GetIBCCreateClientHeaders returns the IBC TM header which will create an on-chain
 // light client. The headers do not have trusted headers (ie trusted validators
 // and trusted height)
-func GetIBCCreateClientHeaders(src, dst *Chain) (srcHeader, dstHeader *tmclient.Header, err error) {
+func GetIBCCreateClientHeaders(src, dst *CosmosChain) (srcHeader, dstHeader *tmclient.Header, err error) {
 	var eg = new(errgroup.Group)
 	eg.Go(func() error {
 		srcHeader, err = src.GetIBCCreateClientHeader()
@@ -54,7 +54,7 @@ func GetIBCCreateClientHeaders(src, dst *Chain) (srcHeader, dstHeader *tmclient.
 // returns an IBC Update Header which can be used to update an on chain
 // light client on the destination chain. The source is used to construct
 // the header data.
-func (c *Chain) GetIBCUpdateHeader(dst *Chain) (*tmclient.Header, error) {
+func (c *CosmosChain) GetIBCUpdateHeader(dst *CosmosChain) (*tmclient.Header, error) {
 	// Construct header data from light client representing source.
 	h, err := c.GetIBCCreateClientHeader()
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *Chain) GetIBCUpdateHeader(dst *Chain) (*tmclient.Header, error) {
 
 // GetIBCUpdateHeaders return the IBC TM Header which will update an on-chain
 // light client. A header for the source and destination chain is returned.
-func GetIBCUpdateHeaders(src, dst *Chain) (srcHeader, dstHeader *tmclient.Header, err error) {
+func GetIBCUpdateHeaders(src, dst *CosmosChain) (srcHeader, dstHeader *tmclient.Header, err error) {
 	var eg = new(errgroup.Group)
 	eg.Go(func() error {
 		srcHeader, err = src.GetIBCUpdateHeader(dst)
@@ -90,7 +90,7 @@ func GetIBCUpdateHeaders(src, dst *Chain) (srcHeader, dstHeader *tmclient.Header
 // TrustedHeight is the latest height of the IBC client on dst
 // TrustedValidators is the validator set of srcChain at the TrustedHeight
 // InjectTrustedFields returns a copy of the header with TrustedFields modified
-func (c *Chain) InjectTrustedFields(dst *Chain, header *tmclient.Header) (*tmclient.Header, error) {
+func (c *CosmosChain) InjectTrustedFields(dst *CosmosChain, header *tmclient.Header) (*tmclient.Header, error) {
 	// make copy of header stored in mop
 	h := *(header)
 

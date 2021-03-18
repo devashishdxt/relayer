@@ -65,10 +65,10 @@ type (
 )
 
 // newTestChain generates a new instance of *Chain with a free TCP port configured as the RPC port
-func newTestChain(t *testing.T, tc testChain) *ry.Chain {
+func newTestChain(t *testing.T, tc testChain) *ry.CosmosChain {
 	_, port, err := server.FreeTCPAddr()
 	require.NoError(t, err)
-	return &ry.Chain{
+	return &ry.CosmosChain{
 		Key:            "testkey",
 		ChainID:        tc.chainID,
 		RPCAddr:        fmt.Sprintf("http://localhost:%s", port),

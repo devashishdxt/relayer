@@ -12,7 +12,7 @@ import (
 )
 
 // SendMsgWithKey allows the user to specify which relayer key will sign the message
-func (c *Chain) SendMsgWithKey(msg sdk.Msg, keyName string) (res *sdk.TxResponse, err error) {
+func (c *CosmosChain) SendMsgWithKey(msg sdk.Msg, keyName string) (res *sdk.TxResponse, err error) {
 	fmt.Println("setting use of key", keyName)
 	c.Key = keyName
 	res, _, err = c.SendMsg(msg)
@@ -21,7 +21,7 @@ func (c *Chain) SendMsgWithKey(msg sdk.Msg, keyName string) (res *sdk.TxResponse
 }
 
 // FaucetHandler listens for addresses
-func (c *Chain) FaucetHandler(fromKey sdk.AccAddress, amounts sdk.Coins) func(w http.ResponseWriter, r *http.Request) {
+func (c *CosmosChain) FaucetHandler(fromKey sdk.AccAddress, amounts sdk.Coins) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		c.Log("handling faucet request...")
@@ -66,7 +66,7 @@ func (c *Chain) FaucetHandler(fromKey sdk.AccAddress, amounts sdk.Coins) func(w 
 	}
 }
 
-func (c *Chain) faucetSend(fromAddr, toAddr sdk.AccAddress, amounts sdk.Coins) error {
+func (c *CosmosChain) faucetSend(fromAddr, toAddr sdk.AccAddress, amounts sdk.Coins) error {
 	// Set sdk config to use custom Bech32 account prefix
 
 	info, err := c.Keybase.KeyByAddress(fromAddr)
@@ -87,7 +87,7 @@ func (c *Chain) faucetSend(fromAddr, toAddr sdk.AccAddress, amounts sdk.Coins) e
 	return nil
 }
 
-func (c *Chain) checkAddress(addr string) (time.Duration, error) {
+func (c *CosmosChain) checkAddress(addr string) (time.Duration, error) {
 	faucetTimeout := 5 * time.Minute
 	if val, ok := c.faucetAddrs[addr]; ok {
 		sinceLastRequest := time.Since(val)

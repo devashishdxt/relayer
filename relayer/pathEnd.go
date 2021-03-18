@@ -46,10 +46,10 @@ func (pe *PathEnd) GetOrder() chantypes.Order {
 	return OrderFromString(strings.ToUpper(pe.Order))
 }
 
-var marshalledChains = map[PathEnd]*Chain{}
+var marshalledChains = map[PathEnd]*CosmosChain{}
 
 // MarshalChain is PathEnd
-func MarshalChain(c *Chain) PathEnd {
+func MarshalChain(c *CosmosChain) PathEnd {
 	pe := *c.PathEnd
 	if _, ok := marshalledChains[pe]; !ok {
 		marshalledChains[pe] = c
@@ -58,7 +58,7 @@ func MarshalChain(c *Chain) PathEnd {
 }
 
 // UnmarshalChain returns Marshalled chain
-func UnmarshalChain(pe PathEnd) *Chain {
+func UnmarshalChain(pe PathEnd) *CosmosChain {
 	if c, ok := marshalledChains[pe]; ok {
 		return c
 	}

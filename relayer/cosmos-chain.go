@@ -48,8 +48,8 @@ var (
 	AllowUpdateAfterMisbehaviour = true
 )
 
-// Chain represents the necessary data for connecting to and indentifying a chain and its counterparites
-type Chain struct {
+// CosmosChain represents the necessary data for connecting to and indentifying a chain and its counterparites
+type CosmosChain struct {
 	Key            string  `yaml:"key" json:"key"`
 	ChainID        string  `yaml:"chain-id" json:"chain-id"`
 	RPCAddr        string  `yaml:"rpc-addr" json:"rpc-addr"`
@@ -75,7 +75,7 @@ type Chain struct {
 }
 
 // ValidatePaths takes two chains and validates their paths
-func ValidatePaths(src, dst *Chain) error {
+func ValidatePaths(src, dst *CosmosChain) error {
 	if err := src.PathEnd.ValidateFull(); err != nil {
 		return src.ErrCantSetPath(err)
 	}
@@ -86,7 +86,7 @@ func ValidatePaths(src, dst *Chain) error {
 }
 
 // ValidateClientPaths takes two chains and validates their clients
-func ValidateClientPaths(src, dst *Chain) error {
+func ValidateClientPaths(src, dst *CosmosChain) error {
 	if err := src.PathEnd.Vclient(); err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func ValidateClientPaths(src, dst *Chain) error {
 
 // ValidateConnectionPaths takes two chains and validates the connections
 // and underlying client identifiers
-func ValidateConnectionPaths(src, dst *Chain) error {
+func ValidateConnectionPaths(src, dst *CosmosChain) error {
 	if err := src.PathEnd.Vclient(); err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func ValidateConnectionPaths(src, dst *Chain) error {
 }
 
 // ValidateChannelParams takes two chains and validates their respective channel params
-func ValidateChannelParams(src, dst *Chain) error {
+func ValidateChannelParams(src, dst *CosmosChain) error {
 	if err := src.PathEnd.ValidateBasic(); err != nil {
 		return err
 	}
@@ -131,13 +131,13 @@ func ValidateChannelParams(src, dst *Chain) error {
 }
 
 // ListenRPCEmitJSON listens for tx and block events from a chain and outputs them as JSON to stdout
-func (c *Chain) ListenRPCEmitJSON(tx, block, data bool) func() {
+func (c *CosmosChain) ListenRPCEmitJSON(tx, block, data bool) func() {
 	doneChan := make(chan struct{})
 	go c.listenLoop(doneChan, tx, block, data)
 	return func() { doneChan <- struct{}{} }
 }
 
-func (c *Chain) listenLoop(doneChan chan struct{}, tx, block, data bool) {
+func (c *CosmosChain) listenLoop(doneChan chan struct{}, tx, block, data bool) {
 	// Subscribe to source chain
 	if err := c.Start(); err != nil {
 		c.Error(err)
@@ -198,7 +198,7 @@ func (c *Chain) listenLoop(doneChan chan struct{}, tx, block, data bool) {
 
 // Init initializes the pieces of a chain that aren't set when it parses a config
 // NOTE: All validation of the chain should happen here.
-func (c *Chain) Init(homePath string, timeout time.Duration, logger log.Logger, debug bool) error {
+func (c *CosmosChain) Init(homePath string, timeout time.Duration, logger log.Logger, debug bool) error {
 	keybase, err := keys.New(c.ChainID, "test", keysDir(homePath, c.ChainID), nil)
 	if err != nil {
 		return err
@@ -242,7 +242,7 @@ func defaultChainLogger() log.Logger {
 }
 
 // KeyExists returns true if there is a specified key in chain's keybase
-func (c *Chain) KeyExists(name string) bool {
+func (c *CosmosChain) KeyExists(name string) bool {
 	k, err := c.Keybase.Key(name)
 	if err != nil {
 		return false
@@ -252,12 +252,12 @@ func (c *Chain) KeyExists(name string) bool {
 }
 
 // GetSelfVersion returns the version of the given chain
-func (c *Chain) GetSelfVersion() uint64 {
+func (c *CosmosChain) GetSelfVersion() uint64 {
 	return clienttypes.ParseChainID(c.ChainID)
 }
 
 // GetTrustingPeriod returns the trusting period for the chain
-func (c *Chain) GetTrustingPeriod() time.Duration {
+func (c *CosmosChain) GetTrustingPeriod() time.Duration {
 	tp, _ := time.ParseDuration(c.TrustingPeriod)
 	return tp
 }
@@ -278,7 +278,7 @@ func newRPCClient(addr string, timeout time.Duration) (*rpchttp.HTTP, error) {
 }
 
 // SendMsg wraps the msg in a stdtx, signs and sends it
-func (c *Chain) SendMsg(datagram sdk.Msg) (*sdk.TxResponse, bool, error) {
+func (c *CosmosChain) SendMsg(datagram sdk.Msg) (*sdk.TxResponse, bool, error) {
 	return c.SendMsgs([]sdk.Msg{datagram})
 }
 
@@ -287,7 +287,7 @@ func (c *Chain) SendMsg(datagram sdk.Msg) (*sdk.TxResponse, bool, error) {
 // not return an error. If a transaction is successfully sent, the result of the execution
 // of that transaction will be logged. A boolean indicating if a transaction was successfully
 // sent and executed successfully is returned.
-func (c *Chain) SendMsgs(msgs []sdk.Msg) (*sdk.TxResponse, bool, error) {
+func (c *CosmosChain) SendMsgs(msgs []sdk.Msg) (*sdk.TxResponse, bool, error) {
 	// Instantiate the client context
 	ctx := c.CLIContext(0)
 
@@ -343,7 +343,7 @@ func (c *Chain) SendMsgs(msgs []sdk.Msg) (*sdk.TxResponse, bool, error) {
 }
 
 // CLIContext returns an instance of client.Context derived from Chain
-func (c *Chain) CLIContext(height int64) sdkCtx.Context {
+func (c *CosmosChain) CLIContext(height int64) sdkCtx.Context {
 	return sdkCtx.Context{}.
 		WithChainID(c.ChainID).
 		WithJSONMarshaler(newContextualStdCodec(c.Encoding.Marshaler, c.UseSDKContext)).
@@ -366,7 +366,7 @@ func (c *Chain) CLIContext(height int64) sdkCtx.Context {
 }
 
 // TxFactory returns an instance of tx.Factory derived from
-func (c *Chain) TxFactory(height int64) tx.Factory {
+func (c *CosmosChain) TxFactory(height int64) tx.Factory {
 	ctx := c.CLIContext(height)
 	return tx.Factory{}.
 		WithAccountRetriever(ctx.AccountRetriever).
@@ -379,22 +379,22 @@ func (c *Chain) TxFactory(height int64) tx.Factory {
 }
 
 // Log takes a string and logs the data
-func (c *Chain) Log(s string) {
+func (c *CosmosChain) Log(s string) {
 	c.logger.Info(s)
 }
 
 // Error takes an error, wraps it in the chainID and logs the error
-func (c *Chain) Error(err error) {
+func (c *CosmosChain) Error(err error) {
 	c.logger.Error(fmt.Sprintf("%s: err(%s)", c.ChainID, err.Error()))
 }
 
 // Start the client service
-func (c *Chain) Start() error {
+func (c *CosmosChain) Start() error {
 	return c.Client.Start()
 }
 
 // Subscribe returns channel of events given a query
-func (c *Chain) Subscribe(query string) (<-chan ctypes.ResultEvent, context.CancelFunc, error) {
+func (c *CosmosChain) Subscribe(query string) (<-chan ctypes.ResultEvent, context.CancelFunc, error) {
 	suffix, err := GenerateRandomString(8)
 	if err != nil {
 		return nil, nil, err
@@ -416,7 +416,7 @@ func lightDir(home string) string {
 }
 
 // GetAddress returns the sdk.AccAddress associated with the configured key
-func (c *Chain) GetAddress() (sdk.AccAddress, error) {
+func (c *CosmosChain) GetAddress() (sdk.AccAddress, error) {
 	defer c.UseSDKContext()()
 	if c.address != nil {
 		return c.address, nil
@@ -432,7 +432,7 @@ func (c *Chain) GetAddress() (sdk.AccAddress, error) {
 }
 
 // MustGetAddress used for brevity
-func (c *Chain) MustGetAddress() sdk.AccAddress {
+func (c *CosmosChain) MustGetAddress() sdk.AccAddress {
 	srcAddr, err := c.GetAddress()
 	if err != nil {
 		panic(err)
@@ -446,7 +446,7 @@ var sdkContextMutex sync.Mutex
 // UseSDKContext uses a custom Bech32 account prefix and returns a restore func
 // CONTRACT: When using this function, caller must ensure that lock contention
 // doesn't cause program to hang. This function is only for use in codec calls
-func (c *Chain) UseSDKContext() func() {
+func (c *CosmosChain) UseSDKContext() func() {
 	// Ensure we're the only one using the global context,
 	// lock context to begin function
 	sdkContextMutex.Lock()
@@ -462,13 +462,13 @@ func (c *Chain) UseSDKContext() func() {
 	return sdkContextMutex.Unlock
 }
 
-func (c *Chain) String() string {
+func (c *CosmosChain) String() string {
 	out, _ := json.Marshal(c)
 	return string(out)
 }
 
 // Update returns a new chain with updated values
-func (c *Chain) Update(key, value string) (out *Chain, err error) {
+func (c *CosmosChain) Update(key, value string) (out *CosmosChain, err error) {
 	out = c
 	switch key {
 	case "key":
@@ -510,7 +510,7 @@ func (c *Chain) Update(key, value string) (out *Chain, err error) {
 // CONTRACT: The cmd calling this function needs to have the "json" and "indent" flags set
 // TODO: better "text" printing here would be a nice to have
 // TODO: fix indenting all over the code base
-func (c *Chain) Print(toPrint proto.Message, text, indent bool) error {
+func (c *CosmosChain) Print(toPrint proto.Message, text, indent bool) error {
 	var (
 		out []byte
 		err error
@@ -535,7 +535,7 @@ func (c *Chain) Print(toPrint proto.Message, text, indent bool) error {
 }
 
 // SendAndPrint sends a transaction and prints according to the passed args
-func (c *Chain) SendAndPrint(txs []sdk.Msg, text, indent bool) (err error) {
+func (c *CosmosChain) SendAndPrint(txs []sdk.Msg, text, indent bool) (err error) {
 	if c.debug {
 		for _, msg := range txs {
 			if err = c.Print(msg, text, indent); err != nil {
@@ -554,10 +554,10 @@ func (c *Chain) SendAndPrint(txs []sdk.Msg, text, indent bool) (err error) {
 }
 
 // Chains is a collection of Chain
-type Chains []*Chain
+type Chains []*CosmosChain
 
 // Get returns the configuration for a given chain
-func (c Chains) Get(chainID string) (*Chain, error) {
+func (c Chains) Get(chainID string) (*CosmosChain, error) {
 	for _, chain := range c {
 		if chainID == chain.ChainID {
 			addr, _ := chain.GetAddress()
@@ -565,11 +565,11 @@ func (c Chains) Get(chainID string) (*Chain, error) {
 			return chain, nil
 		}
 	}
-	return &Chain{}, fmt.Errorf("chain with ID %s is not configured", chainID)
+	return &CosmosChain{}, fmt.Errorf("chain with ID %s is not configured", chainID)
 }
 
 // MustGet returns the chain and panics on any error
-func (c Chains) MustGet(chainID string) *Chain {
+func (c Chains) MustGet(chainID string) *CosmosChain {
 	out, err := c.Get(chainID)
 	if err != nil {
 		panic(err)
@@ -578,8 +578,8 @@ func (c Chains) MustGet(chainID string) *Chain {
 }
 
 // Gets returns a map chainIDs to their chains
-func (c Chains) Gets(chainIDs ...string) (map[string]*Chain, error) {
-	out := make(map[string]*Chain)
+func (c Chains) Gets(chainIDs ...string) (map[string]*CosmosChain, error) {
+	out := make(map[string]*CosmosChain)
 	for _, cid := range chainIDs {
 		chain, err := c.Get(cid)
 		if err != nil {
@@ -591,13 +591,13 @@ func (c Chains) Gets(chainIDs ...string) (map[string]*Chain, error) {
 }
 
 // GetRPCPort returns the port configured for the chain
-func (c *Chain) GetRPCPort() string {
+func (c *CosmosChain) GetRPCPort() string {
 	u, _ := url.Parse(c.RPCAddr)
 	return u.Port()
 }
 
 // CreateTestKey creates a key for test chain
-func (c *Chain) CreateTestKey() error {
+func (c *CosmosChain) CreateTestKey() error {
 	if c.KeyExists(c.Key) {
 		return fmt.Errorf("key %s exists for chain %s", c.ChainID, c.Key)
 	}
@@ -625,12 +625,12 @@ func CreateMnemonic() (string, error) {
 }
 
 // GetTimeout returns the chain's configured timeout
-func (c *Chain) GetTimeout() time.Duration {
+func (c *CosmosChain) GetTimeout() time.Duration {
 	return c.timeout
 }
 
 // StatusErr returns err unless the chain is ready to go
-func (c *Chain) StatusErr() error {
+func (c *CosmosChain) StatusErr() error {
 	stat, err := c.Client.Status(context.Background())
 	switch {
 	case err != nil:
@@ -644,7 +644,7 @@ func (c *Chain) StatusErr() error {
 
 // GenerateConnHandshakeProof generates all the proofs needed to prove the existence of the
 // connection state on this chain. A counterparty should use these generated proofs.
-func (c *Chain) GenerateConnHandshakeProof(height uint64) (clientState ibcexported.ClientState,
+func (c *CosmosChain) GenerateConnHandshakeProof(height uint64) (clientState ibcexported.ClientState,
 	clientStateProof []byte, consensusProof []byte, connectionProof []byte,
 	connectionProofHeight clienttypes.Height, err error) {
 	var (
@@ -685,7 +685,7 @@ func (c *Chain) GenerateConnHandshakeProof(height uint64) (clientState ibcexport
 }
 
 // UpgradeChain submits and upgrade proposal using a zero'd out client state with an updated unbonding period.
-func (c *Chain) UpgradeChain(dst *Chain, plan *upgradetypes.Plan, deposit sdk.Coin,
+func (c *CosmosChain) UpgradeChain(dst *CosmosChain, plan *upgradetypes.Plan, deposit sdk.Coin,
 	unbondingPeriod time.Duration) error {
 	if _, _, err := UpdateLightClients(c, dst); err != nil {
 		return err

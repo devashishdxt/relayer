@@ -20,7 +20,7 @@ import (
 // https://github.com/cosmos/cosmos-sdk/issues/8332
 
 // CreateClient creates an sdk.Msg to update the client on src with consensus state from dst
-func (c *Chain) CreateClient(
+func (c *CosmosChain) CreateClient(
 	//nolint:interfacer
 	clientState *tmclient.ClientState,
 	dstHeader *tmclient.Header) sdk.Msg {
@@ -45,7 +45,7 @@ func (c *Chain) CreateClient(
 }
 
 // UpdateClient creates an sdk.Msg to update the client on src with data pulled from dst.
-func (c *Chain) UpdateClient(dst *Chain) (sdk.Msg, error) {
+func (c *CosmosChain) UpdateClient(dst *CosmosChain) (sdk.Msg, error) {
 	header, err := dst.GetIBCUpdateHeader(c)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (c *Chain) UpdateClient(dst *Chain) (sdk.Msg, error) {
 }
 
 // ConnInit creates a MsgConnectionOpenInit
-func (c *Chain) ConnInit(counterparty *PathEnd) sdk.Msg {
+func (c *CosmosChain) ConnInit(counterparty *PathEnd) sdk.Msg {
 	var version *conntypes.Version
 	return conntypes.NewMsgConnectionOpenInit(
 		c.PathEnd.ClientID,
@@ -79,8 +79,8 @@ func (c *Chain) ConnInit(counterparty *PathEnd) sdk.Msg {
 }
 
 // ConnTry creates a MsgConnectionOpenTry
-func (c *Chain) ConnTry(
-	counterparty *Chain,
+func (c *CosmosChain) ConnTry(
+	counterparty *CosmosChain,
 ) (sdk.Msg, error) {
 	// NOTE: the proof height uses - 1 due to tendermint's delayed execution model
 	clientState, clientStateProof, consensusStateProof, connStateProof,
@@ -113,8 +113,8 @@ func (c *Chain) ConnTry(
 }
 
 // ConnAck creates a MsgConnectionOpenAck
-func (c *Chain) ConnAck(
-	counterparty *Chain,
+func (c *CosmosChain) ConnAck(
+	counterparty *CosmosChain,
 ) (sdk.Msg, error) {
 	// NOTE: the proof height uses - 1 due to tendermint's delayed execution model
 	clientState, clientStateProof, consensusStateProof, connStateProof,
@@ -138,7 +138,7 @@ func (c *Chain) ConnAck(
 }
 
 // ConnConfirm creates a MsgConnectionOpenConfirm
-func (c *Chain) ConnConfirm(counterpartyConnState *conntypes.QueryConnectionResponse) sdk.Msg {
+func (c *CosmosChain) ConnConfirm(counterpartyConnState *conntypes.QueryConnectionResponse) sdk.Msg {
 	return conntypes.NewMsgConnectionOpenConfirm(
 		c.PathEnd.ConnectionID,
 		counterpartyConnState.Proof,
@@ -148,7 +148,7 @@ func (c *Chain) ConnConfirm(counterpartyConnState *conntypes.QueryConnectionResp
 }
 
 // ChanInit creates a MsgChannelOpenInit
-func (c *Chain) ChanInit(counterparty *PathEnd) sdk.Msg {
+func (c *CosmosChain) ChanInit(counterparty *PathEnd) sdk.Msg {
 	return chantypes.NewMsgChannelOpenInit(
 		c.PathEnd.PortID,
 		c.PathEnd.Version,
@@ -160,8 +160,8 @@ func (c *Chain) ChanInit(counterparty *PathEnd) sdk.Msg {
 }
 
 // ChanTry creates a MsgChannelOpenTry
-func (c *Chain) ChanTry(
-	counterparty *Chain,
+func (c *CosmosChain) ChanTry(
+	counterparty *CosmosChain,
 ) (sdk.Msg, error) {
 	// NOTE: the proof height uses - 1 due to tendermint's delayed execution model
 	counterpartyChannelRes, err := counterparty.QueryChannel(int64(counterparty.MustGetLatestLightHeight()) - 1)
@@ -186,8 +186,8 @@ func (c *Chain) ChanTry(
 }
 
 // ChanAck creates a MsgChannelOpenAck
-func (c *Chain) ChanAck(
-	counterparty *Chain,
+func (c *CosmosChain) ChanAck(
+	counterparty *CosmosChain,
 ) (sdk.Msg, error) {
 	// NOTE: the proof height uses - 1 due to tendermint's delayed execution model
 	counterpartyChannelRes, err := counterparty.QueryChannel(int64(counterparty.MustGetLatestLightHeight()) - 1)
@@ -207,7 +207,7 @@ func (c *Chain) ChanAck(
 }
 
 // ChanConfirm creates a MsgChannelOpenConfirm
-func (c *Chain) ChanConfirm(dstChanState *chantypes.QueryChannelResponse) sdk.Msg {
+func (c *CosmosChain) ChanConfirm(dstChanState *chantypes.QueryChannelResponse) sdk.Msg {
 	return chantypes.NewMsgChannelOpenConfirm(
 		c.PathEnd.PortID,
 		c.PathEnd.ChannelID,
@@ -218,7 +218,7 @@ func (c *Chain) ChanConfirm(dstChanState *chantypes.QueryChannelResponse) sdk.Ms
 }
 
 // ChanCloseInit creates a MsgChannelCloseInit
-func (c *Chain) ChanCloseInit() sdk.Msg {
+func (c *CosmosChain) ChanCloseInit() sdk.Msg {
 	return chantypes.NewMsgChannelCloseInit(
 		c.PathEnd.PortID,
 		c.PathEnd.ChannelID,
@@ -227,7 +227,7 @@ func (c *Chain) ChanCloseInit() sdk.Msg {
 }
 
 // ChanCloseConfirm creates a MsgChannelCloseConfirm
-func (c *Chain) ChanCloseConfirm(dstChanState *chantypes.QueryChannelResponse) sdk.Msg {
+func (c *CosmosChain) ChanCloseConfirm(dstChanState *chantypes.QueryChannelResponse) sdk.Msg {
 	return chantypes.NewMsgChannelCloseConfirm(
 		c.PathEnd.PortID,
 		c.PathEnd.ChannelID,
@@ -238,7 +238,7 @@ func (c *Chain) ChanCloseConfirm(dstChanState *chantypes.QueryChannelResponse) s
 }
 
 // MsgTransfer creates a new transfer message
-func (c *Chain) MsgTransfer(dst *PathEnd, amount sdk.Coin, dstAddr string,
+func (c *CosmosChain) MsgTransfer(dst *PathEnd, amount sdk.Coin, dstAddr string,
 	timeoutHeight, timeoutTimestamp uint64) sdk.Msg {
 
 	version := clienttypes.ParseChainID(dst.ChainID)

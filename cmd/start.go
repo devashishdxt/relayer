@@ -120,7 +120,7 @@ func trapSignal(done func()) {
 }
 
 // UpdateClientsFromChains takes src, dst chains, threshold time and update clients based on expiry time
-func UpdateClientsFromChains(src, dst *relayer.Chain, thresholdTime time.Duration) (time.Duration, error) {
+func UpdateClientsFromChains(src, dst *relayer.CosmosChain, thresholdTime time.Duration) (time.Duration, error) {
 	var (
 		srcTimeExpiry, dstTimeExpiry time.Duration
 		err                          error

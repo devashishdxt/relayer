@@ -44,7 +44,7 @@ type Service struct {
 }
 
 // NewService returns a new instance of Service
-func NewService(name, path string, src, dst *relayer.Chain, doneFunc func()) *Service {
+func NewService(name, path string, src, dst *relayer.CosmosChain, doneFunc func()) *Service {
 	return &Service{name, path, src.ChainID, src.Key, dst.ChainID, dst.Key, doneFunc}
 }
 

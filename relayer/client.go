@@ -15,7 +15,7 @@ import (
 
 // CreateClients creates clients for src on dst and dst on src if the client ids are unspecified.
 // TODO: de-duplicate code
-func (c *Chain) CreateClients(dst *Chain) (modified bool, err error) {
+func (c *CosmosChain) CreateClients(dst *CosmosChain) (modified bool, err error) {
 	// Handle off chain light clients
 	if err := c.ValidateLightInitialized(); err != nil {
 		return false, err
@@ -165,7 +165,7 @@ func (c *Chain) CreateClients(dst *Chain) (modified bool, err error) {
 }
 
 // UpdateClients updates clients for src on dst and dst on src given the configured paths
-func (c *Chain) UpdateClients(dst *Chain) (err error) {
+func (c *CosmosChain) UpdateClients(dst *CosmosChain) (err error) {
 	clients := &RelayMsgs{Src: []sdk.Msg{}, Dst: []sdk.Msg{}}
 
 	srcUpdateHeader, dstUpdateHeader, err := GetIBCUpdateHeaders(c, dst)
@@ -206,7 +206,7 @@ func (c *Chain) UpdateClients(dst *Chain) (err error) {
 }
 
 // UpgradeClients upgrades the client on src after dst chain has undergone an upgrade.
-func (c *Chain) UpgradeClients(dst *Chain, height int64) error {
+func (c *CosmosChain) UpgradeClients(dst *CosmosChain, height int64) error {
 	// updates off-chain light client
 	updateMsg, err := c.UpdateClient(dst)
 	if err != nil {
@@ -251,7 +251,7 @@ func (c *Chain) UpgradeClients(dst *Chain, height int64) error {
 // and check if any match the counterparty. The counterparty must have a matching consensus state
 // to the latest consensus state of a potential match. The provided client state is the client
 // state that will be created if there exist no matches.
-func FindMatchingClient(source, counterparty *Chain, clientState *ibctmtypes.ClientState) (string, bool) {
+func FindMatchingClient(source, counterparty *CosmosChain, clientState *ibctmtypes.ClientState) (string, bool) {
 	// TODO: add appropriate offset and limits, along with retries
 	clientsResp, err := source.QueryClients(0, 1000)
 	if err != nil {
@@ -351,7 +351,7 @@ func IsMatchingConsensusState(consensusStateA, consensusStateB *ibctmtypes.Conse
 }
 
 // AutoUpdateClient update client automatically to prevent expiry
-func AutoUpdateClient(src, dst *Chain, thresholdTime time.Duration) (time.Duration, error) {
+func AutoUpdateClient(src, dst *CosmosChain, thresholdTime time.Duration) (time.Duration, error) {
 	height, err := src.QueryLatestHeight()
 	if err != nil {
 		return 0, err

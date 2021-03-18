@@ -9,7 +9,7 @@ import (
 )
 
 // GetLightHeader returns header with chain and optional height as inputs
-func GetLightHeader(chain *relayer.Chain, opts ...string) (*tmclient.Header, error) {
+func GetLightHeader(chain *relayer.CosmosChain, opts ...string) (*tmclient.Header, error) {
 	if len(opts) > 0 {
 		height, err := strconv.ParseInt(opts[0], 10, 64) //convert to int64
 		if err != nil {
@@ -34,7 +34,7 @@ func GetLightHeader(chain *relayer.Chain, opts ...string) (*tmclient.Header, err
 }
 
 // InitLight is a helper function for init light
-func InitLight(chain *relayer.Chain, force bool, height int64, hash []byte) (string, error) {
+func InitLight(chain *relayer.CosmosChain, force bool, height int64, hash []byte) (string, error) {
 	db, df, err := chain.NewLightDB()
 	if err != nil {
 		return "", err
@@ -61,7 +61,7 @@ func InitLight(chain *relayer.Chain, force bool, height int64, hash []byte) (str
 }
 
 // UpdateLight is a helper function for update light
-func UpdateLight(chain *relayer.Chain) (string, error) {
+func UpdateLight(chain *relayer.CosmosChain) (string, error) {
 	bh, err := chain.GetLatestLightHeader()
 	if err != nil {
 		return "", err

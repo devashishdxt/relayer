@@ -659,6 +659,6 @@ ibcconn2 ibcchan1 ibcchan2 transfer transfer`, appName)),
 	return cmd
 }
 
-func sendAndPrint(txs []sdk.Msg, c *relayer.Chain, cmd *cobra.Command) error {
+func sendAndPrint(txs []sdk.Msg, c *relayer.CosmosChain, cmd *cobra.Command) error {
 	return c.SendAndPrint(txs, false, false)
 }

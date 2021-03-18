@@ -22,7 +22,7 @@ import (
 func spinUpTestChains(t *testing.T, testChains ...testChain) ry.Chains {
 	var (
 		resources []*dockertest.Resource
-		chains    = make([]*ry.Chain, len(testChains))
+		chains    = make([]*ry.CosmosChain, len(testChains))
 
 		wg    sync.WaitGroup
 		rchan = make(chan *dockertest.Resource, len(testChains))
@@ -104,7 +104,7 @@ func removeTestContainer(pool *dockertest.Pool, containerName string) error {
 
 // spinUpTestContainer spins up a test container with the given configuration
 func spinUpTestContainer(t *testing.T, rchan chan<- *dockertest.Resource,
-	pool *dockertest.Pool, c *ry.Chain, dir string, wg *sync.WaitGroup, tc testChain) {
+	pool *dockertest.Pool, c *ry.CosmosChain, dir string, wg *sync.WaitGroup, tc testChain) {
 	defer wg.Done()
 	var (
 		err      error
@@ -167,7 +167,7 @@ func spinUpTestContainer(t *testing.T, rchan chan<- *dockertest.Resource,
 // cleanUpTest is called as a goroutine to wait until the tests have completed and
 // cleans up the docker containers and relayer config
 func cleanUpTest(t *testing.T, testsDone <-chan struct{}, contDone chan<- struct{},
-	resources []*dockertest.Resource, pool *dockertest.Pool, dir string, chains []*ry.Chain) {
+	resources []*dockertest.Resource, pool *dockertest.Pool, dir string, chains []*ry.CosmosChain) {
 	// block here until tests are complete
 	<-testsDone
 
@@ -191,7 +191,7 @@ func cleanUpTest(t *testing.T, testsDone <-chan struct{}, contDone chan<- struct
 }
 
 // for the love of logs https://www.youtube.com/watch?v=DtsKcHmceqY
-func getLoggingChain(chns []*ry.Chain, rsr *dockertest.Resource) *ry.Chain {
+func getLoggingChain(chns []*ry.CosmosChain, rsr *dockertest.Resource) *ry.CosmosChain {
 	for _, c := range chns {
 		if strings.Contains(rsr.Container.Name, c.ChainID) {
 			return c
@@ -200,7 +200,7 @@ func getLoggingChain(chns []*ry.Chain, rsr *dockertest.Resource) *ry.Chain {
 	return nil
 }
 
-func genTestPathAndSet(src, dst *ry.Chain, srcPort, dstPort string) (*ry.Path, error) {
+func genTestPathAndSet(src, dst *ry.CosmosChain, srcPort, dstPort string) (*ry.Path, error) {
 	path := ry.GenPath(src.ChainID, dst.ChainID, srcPort, dstPort, "UNORDERED", "ics20-1")
 
 	src.PathEnd = path.Src

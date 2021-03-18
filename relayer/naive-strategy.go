@@ -51,7 +51,7 @@ func (nrs *NaiveStrategy) GetType() string {
 }
 
 // UnrelayedSequences returns the unrelayed sequence numbers between two chains
-func (nrs *NaiveStrategy) UnrelayedSequences(src, dst *Chain) (*RelaySequences, error) {
+func (nrs *NaiveStrategy) UnrelayedSequences(src, dst *CosmosChain) (*RelaySequences, error) {
 	var (
 		eg           = new(errgroup.Group)
 		srcPacketSeq = []uint64{}
@@ -141,7 +141,7 @@ func (nrs *NaiveStrategy) UnrelayedSequences(src, dst *Chain) (*RelaySequences, 
 }
 
 // UnrelayedAcknowledgements returns the unrelayed sequence numbers between two chains
-func (nrs *NaiveStrategy) UnrelayedAcknowledgements(src, dst *Chain) (*RelaySequences, error) {
+func (nrs *NaiveStrategy) UnrelayedAcknowledgements(src, dst *CosmosChain) (*RelaySequences, error) {
 	var (
 		eg           = new(errgroup.Group)
 		srcPacketSeq = []uint64{}
@@ -231,7 +231,7 @@ func (nrs *NaiveStrategy) UnrelayedAcknowledgements(src, dst *Chain) (*RelaySequ
 }
 
 // HandleEvents defines how the relayer will handle block and transaction events as they are emitted
-func (nrs *NaiveStrategy) HandleEvents(src, dst *Chain, events map[string][]string) {
+func (nrs *NaiveStrategy) HandleEvents(src, dst *CosmosChain, events map[string][]string) {
 	rlyPackets, err := relayPacketsFromEventListener(src.PathEnd, dst.PathEnd, events)
 	if len(rlyPackets) > 0 && err == nil {
 		nrs.sendTxFromEventPackets(src, dst, rlyPackets)
@@ -338,7 +338,7 @@ func relayPacketsFromEventListener(src, dst *PathEnd, events map[string][]string
 	return rlyPkts, nil
 }
 
-func (nrs *NaiveStrategy) sendTxFromEventPackets(src, dst *Chain, rlyPackets []relayPacket) {
+func (nrs *NaiveStrategy) sendTxFromEventPackets(src, dst *CosmosChain, rlyPackets []relayPacket) {
 
 	// fetch the proofs for the relayPackets
 	for _, rp := range rlyPackets {
@@ -399,7 +399,7 @@ type RelaySequences struct {
 }
 
 // RelayAcknowledgements creates transactions to relay acknowledgements from src to dst and from dst to src
-func (nrs *NaiveStrategy) RelayAcknowledgements(src, dst *Chain, sp *RelaySequences) error {
+func (nrs *NaiveStrategy) RelayAcknowledgements(src, dst *CosmosChain, sp *RelaySequences) error {
 	// set the maximum relay transaction constraints
 	msgs := &RelayMsgs{
 		Src:          []sdk.Msg{},
@@ -476,7 +476,7 @@ func (nrs *NaiveStrategy) RelayAcknowledgements(src, dst *Chain, sp *RelaySequen
 }
 
 // RelayPackets creates transactions to relay packets from src to dst and from dst to src
-func (nrs *NaiveStrategy) RelayPackets(src, dst *Chain, sp *RelaySequences) error {
+func (nrs *NaiveStrategy) RelayPackets(src, dst *CosmosChain, sp *RelaySequences) error {
 	if _, _, err := UpdateLightClients(src, dst); err != nil {
 		return err
 	}
@@ -584,7 +584,7 @@ func (nrs *NaiveStrategy) RelayPackets(src, dst *Chain, sp *RelaySequences) erro
 }
 
 // relayPacketFromSequence returns a sdk.Msg to relay a packet with a given seq on src
-func relayPacketFromSequence(src, dst *Chain, seq uint64) (relayPacket, error) {
+func relayPacketFromSequence(src, dst *CosmosChain, seq uint64) (relayPacket, error) {
 	txs, err := src.QueryTxs(src.MustGetLatestLightHeight(), 1, 1000, rcvPacketQuery(src.PathEnd.ChannelID, int(seq)))
 	switch {
 	case err != nil:
@@ -630,7 +630,7 @@ func relayPacketFromSequence(src, dst *Chain, seq uint64) (relayPacket, error) {
 	return nil, fmt.Errorf("should have errored before here")
 }
 
-func acknowledgementFromSequence(src, dst *Chain, seq uint64) (relayPacket, error) {
+func acknowledgementFromSequence(src, dst *CosmosChain, seq uint64) (relayPacket, error) {
 	txs, err := src.QueryTxs(src.MustGetLatestLightHeight(), 1, 1000, ackPacketQuery(src.PathEnd.ChannelID, int(seq)))
 	switch {
 	case err != nil:
@@ -663,7 +663,7 @@ func acknowledgementFromSequence(src, dst *Chain, seq uint64) (relayPacket, erro
 
 // relayPacketsFromResultTx looks through the events in a *ctypes.ResultTx
 // and returns relayPackets with the appropriate data
-func relayPacketsFromResultTx(src, dst *Chain, res *ctypes.ResultTx) ([]relayPacket, []relayPacket, error) {
+func relayPacketsFromResultTx(src, dst *CosmosChain, res *ctypes.ResultTx) ([]relayPacket, []relayPacket, error) {
 	var (
 		rcvPackets     []relayPacket
 		timeoutPackets []relayPacket

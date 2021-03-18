@@ -10,7 +10,7 @@ import (
 
 // CreateOpenConnections runs the connection creation messages on timeout until they pass.
 // The returned boolean indicates that the path end has been modified.
-func (c *Chain) CreateOpenConnections(dst *Chain, maxRetries uint64, to time.Duration) (modified bool, err error) {
+func (c *CosmosChain) CreateOpenConnections(dst *CosmosChain, maxRetries uint64, to time.Duration) (modified bool, err error) {
 	// client identifiers must be filled in
 	if err := ValidateClientPaths(c, dst); err != nil {
 		return modified, err
@@ -75,7 +75,7 @@ func (c *Chain) CreateOpenConnections(dst *Chain, maxRetries uint64, to time.Dur
 // states of two connection ends specified by the relayer configuration
 // file. The booleans return indicate if the message was successfully
 // executed and if this was the last handshake step.
-func ExecuteConnectionStep(src, dst *Chain) (success, last, modified bool, err error) {
+func ExecuteConnectionStep(src, dst *CosmosChain) (success, last, modified bool, err error) {
 	// variables needed to determine the current handshake step
 	var (
 		srcConn, dstConn *conntypes.QueryConnectionResponse
@@ -234,7 +234,7 @@ func ExecuteConnectionStep(src, dst *Chain) (success, last, modified bool, err e
 // initialized. The PathEnds are updated upon a successful transaction.
 // NOTE: This function may need to be called twice if neither connection exists.
 func InitializeConnection(
-	src, dst *Chain, srcUpdateMsg, dstUpdateMsg sdk.Msg,
+	src, dst *CosmosChain, srcUpdateMsg, dstUpdateMsg sdk.Msg,
 ) (success, modified bool, err error) {
 	switch {
 
@@ -348,7 +348,7 @@ func InitializeConnection(
 
 // FindMatchingConnection will determine if there already exists a connection between source and counterparty
 // that matches the parameters set in the relayer config.
-func FindMatchingConnection(source, counterparty *Chain) (string, bool) {
+func FindMatchingConnection(source, counterparty *CosmosChain) (string, bool) {
 	// TODO: add appropriate offset and limits, along with retries
 	connectionsResp, err := source.QueryConnections(0, 1000)
 	if err != nil {
@@ -369,7 +369,7 @@ func FindMatchingConnection(source, counterparty *Chain) (string, bool) {
 }
 
 // IsMatchingConnection determines if given connection matches required conditions
-func IsMatchingConnection(source, counterparty *Chain, connection *conntypes.IdentifiedConnection) bool {
+func IsMatchingConnection(source, counterparty *CosmosChain, connection *conntypes.IdentifiedConnection) bool {
 	// determines version we use is matching with given versions
 	_, isVersionMatched := conntypes.FindSupportedVersion(conntypes.DefaultIBCVersion,
 		conntypes.ProtoVersionsToExported(connection.Versions))

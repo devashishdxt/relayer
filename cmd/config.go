@@ -221,7 +221,7 @@ func cfgFilesAddChains(dir string) (cfg *Config, err error) {
 	}
 	cfg = config
 	for _, f := range files {
-		c := &relayer.Chain{}
+		c := &relayer.CosmosChain{}
 		pth := fmt.Sprintf("%s/%s", dir, f.Name())
 		if f.IsDir() {
 			fmt.Printf("directory at %s, skipping...\n", pth)
@@ -306,7 +306,7 @@ type Config struct {
 }
 
 // ChainsFromPath takes the path name and returns the properly configured chains
-func (c *Config) ChainsFromPath(path string) (map[string]*relayer.Chain, string, string, error) {
+func (c *Config) ChainsFromPath(path string) (map[string]*relayer.CosmosChain, string, string, error) {
 	pth, err := c.Paths.Get(path)
 	if err != nil {
 		return nil, "", "", err
@@ -362,7 +362,7 @@ func newDefaultGlobalConfig() GlobalConfig {
 }
 
 // AddChain adds an additional chain to the config
-func (c *Config) AddChain(chain *relayer.Chain) (err error) {
+func (c *Config) AddChain(chain *relayer.CosmosChain) (err error) {
 	if chain.ChainID == "" {
 		return fmt.Errorf("chain ID cannot be empty")
 	}
@@ -618,7 +618,7 @@ func (c *Config) ValidatePathEnd(pe *relayer.PathEnd) error {
 }
 
 // ValidateClient validates client id in provided pathend
-func (c *Config) ValidateClient(chain *relayer.Chain, height int64, pe *relayer.PathEnd) error {
+func (c *Config) ValidateClient(chain *relayer.CosmosChain, height int64, pe *relayer.PathEnd) error {
 	if err := pe.Vclient(); err != nil {
 		return err
 	}
@@ -632,7 +632,7 @@ func (c *Config) ValidateClient(chain *relayer.Chain, height int64, pe *relayer.
 }
 
 // ValidateConnection validates connection id in provided pathend
-func (c *Config) ValidateConnection(chain *relayer.Chain, height int64, pe *relayer.PathEnd) error {
+func (c *Config) ValidateConnection(chain *relayer.CosmosChain, height int64, pe *relayer.PathEnd) error {
 	if err := pe.Vconn(); err != nil {
 		return err
 	}
@@ -650,7 +650,7 @@ func (c *Config) ValidateConnection(chain *relayer.Chain, height int64, pe *rela
 }
 
 // ValidateChannel validates channel id in provided pathend
-func (c *Config) ValidateChannel(chain *relayer.Chain, height int64, pe *relayer.PathEnd) error {
+func (c *Config) ValidateChannel(chain *relayer.CosmosChain, height int64, pe *relayer.PathEnd) error {
 	if err := pe.Vchan(); err != nil {
 		return err
 	}

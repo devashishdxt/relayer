@@ -39,7 +39,7 @@ var (
 func lightError(err error) error { return fmt.Errorf("light client: %w", err) }
 
 // UpdateLightClients updates the off-chain tendermint light clients concurrently.
-func UpdateLightClients(src, dst *Chain) (srcLB, dstLB *tmtypes.LightBlock, err error) {
+func UpdateLightClients(src, dst *CosmosChain) (srcLB, dstLB *tmtypes.LightBlock, err error) {
 	var eg = new(errgroup.Group)
 	eg.Go(func() error {
 		srcLB, err = src.UpdateLightClient()
@@ -57,7 +57,7 @@ func UpdateLightClients(src, dst *Chain) (srcLB, dstLB *tmtypes.LightBlock, err 
 
 // UpdateLightClient updates the tendermint light client by verifying the current
 // header against a trusted header.
-func (c *Chain) UpdateLightClient() (*tmtypes.LightBlock, error) {
+func (c *CosmosChain) UpdateLightClient() (*tmtypes.LightBlock, error) {
 	// create database connection
 	db, df, err := c.NewLightDB()
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *Chain) UpdateLightClient() (*tmtypes.LightBlock, error) {
 }
 
 // LightHTTP returns the http client for light clients
-func (c *Chain) LightHTTP() lightp.Provider {
+func (c *CosmosChain) LightHTTP() lightp.Provider {
 	cl, err := lighthttp.New(c.ChainID, c.RPCAddr)
 	if err != nil {
 		panic(err)
@@ -97,7 +97,7 @@ func (c *Chain) LightHTTP() lightp.Provider {
 
 // LightClientWithoutTrust querys the latest header from the chain and initializes a new light client
 // database using that header. This should only be called when first initializing the light client
-func (c *Chain) LightClientWithoutTrust(db dbm.DB) (*light.Client, error) {
+func (c *CosmosChain) LightClientWithoutTrust(db dbm.DB) (*light.Client, error) {
 	var (
 		height int64
 		err    error
@@ -142,7 +142,7 @@ func (c *Chain) LightClientWithoutTrust(db dbm.DB) (*light.Client, error) {
 
 // LightClientWithTrust takes a header from the chain and attempts to add that header to the light
 // database.
-func (c *Chain) LightClientWithTrust(db dbm.DB, to light.TrustOptions) (*light.Client, error) {
+func (c *CosmosChain) LightClientWithTrust(db dbm.DB, to light.TrustOptions) (*light.Client, error) {
 	prov := c.LightHTTP()
 	return light.NewClient(
 		context.Background(),
@@ -160,7 +160,7 @@ func (c *Chain) LightClientWithTrust(db dbm.DB, to light.TrustOptions) (*light.C
 
 // LightClient initializes the light client for a given chain from the trusted store in the database
 // this should be call for all other light client usage
-func (c *Chain) LightClient(db dbm.DB) (*light.Client, error) {
+func (c *CosmosChain) LightClient(db dbm.DB) (*light.Client, error) {
 	prov := c.LightHTTP()
 	return light.NewClientFromTrustedStore(
 		c.ChainID,
@@ -177,7 +177,7 @@ func (c *Chain) LightClient(db dbm.DB) (*light.Client, error) {
 
 // NewLightDB returns a new instance of the lightclient database connection
 // CONTRACT: must close the database connection when done with it (defer df())
-func (c *Chain) NewLightDB() (db *dbm.GoLevelDB, df func(), err error) {
+func (c *CosmosChain) NewLightDB() (db *dbm.GoLevelDB, df func(), err error) {
 	// a lock is used to prevent error messages or panics from two processes
 	// trying to simultanenously use the light client
 	lightDBMutex.Lock()
@@ -200,12 +200,12 @@ func (c *Chain) NewLightDB() (db *dbm.GoLevelDB, df func(), err error) {
 }
 
 // DeleteLightDB removes the light client database on disk, forcing re-initialization
-func (c *Chain) DeleteLightDB() error {
+func (c *CosmosChain) DeleteLightDB() error {
 	return os.RemoveAll(filepath.Join(lightDir(c.HomePath), fmt.Sprintf("%s.db", c.ChainID)))
 }
 
 // TrustOptions returns light.TrustOptions given a height and hash
-func (c *Chain) TrustOptions(height int64, hash []byte) light.TrustOptions {
+func (c *CosmosChain) TrustOptions(height int64, hash []byte) light.TrustOptions {
 	return light.TrustOptions{
 		Period: c.GetTrustingPeriod(),
 		Height: height,
@@ -214,18 +214,18 @@ func (c *Chain) TrustOptions(height int64, hash []byte) light.TrustOptions {
 }
 
 // GetLatestLightHeader returns the header to be used for client creation
-func (c *Chain) GetLatestLightHeader() (*tmclient.Header, error) {
+func (c *CosmosChain) GetLatestLightHeader() (*tmclient.Header, error) {
 	return c.GetLightSignedHeaderAtHeight(0)
 }
 
 // VerifyProof performs response proof verification.
-func (c *Chain) VerifyProof(queryPath string, resp abci.ResponseQuery) error {
+func (c *CosmosChain) VerifyProof(queryPath string, resp abci.ResponseQuery) error {
 	// TODO: write this verify function
 	return nil
 }
 
 // ValidateTxResult takes a transaction and validates the proof against a stored root of trust
-func (c *Chain) ValidateTxResult(resTx *ctypes.ResultTx) (err error) {
+func (c *CosmosChain) ValidateTxResult(resTx *ctypes.ResultTx) (err error) {
 	// fetch the header at the height from the ResultTx from the light database
 	check, err := c.GetLightSignedHeaderAtHeight(resTx.Height - 1)
 	if err != nil {
@@ -237,7 +237,7 @@ func (c *Chain) ValidateTxResult(resTx *ctypes.ResultTx) (err error) {
 }
 
 // GetLatestLightHeights returns both the src and dst latest height in the local client
-func GetLatestLightHeights(src, dst *Chain) (srch int64, dsth int64, err error) {
+func GetLatestLightHeights(src, dst *CosmosChain) (srch int64, dsth int64, err error) {
 	var eg = new(errgroup.Group)
 	eg.Go(func() error {
 		srch, err = src.GetLatestLightHeight()
@@ -254,7 +254,7 @@ func GetLatestLightHeights(src, dst *Chain) (srch int64, dsth int64, err error) 
 }
 
 // GetLatestLightHeight returns the latest height of the light client.
-func (c *Chain) GetLatestLightHeight() (int64, error) {
+func (c *CosmosChain) GetLatestLightHeight() (int64, error) {
 	db, df, err := c.NewLightDB()
 	if err != nil {
 		return -1, err
@@ -271,7 +271,7 @@ func (c *Chain) GetLatestLightHeight() (int64, error) {
 
 // MustGetLatestLightHeight returns the latest height of the light client
 // and panics if an error occurs.
-func (c *Chain) MustGetLatestLightHeight() uint64 {
+func (c *CosmosChain) MustGetLatestLightHeight() uint64 {
 	height, err := c.GetLatestLightHeight()
 	if err != nil {
 		panic(err)
@@ -281,7 +281,7 @@ func (c *Chain) MustGetLatestLightHeight() uint64 {
 }
 
 // GetLightSignedHeaderAtHeight returns a signed header at a particular height.
-func (c *Chain) GetLightSignedHeaderAtHeight(height int64) (*tmclient.Header, error) {
+func (c *CosmosChain) GetLightSignedHeaderAtHeight(height int64) (*tmclient.Header, error) {
 	// create database connection
 	db, df, err := c.NewLightDB()
 	if err != nil {
@@ -313,7 +313,7 @@ func (c *Chain) GetLightSignedHeaderAtHeight(height int64) (*tmclient.Header, er
 var ErrLightNotInitialized = errors.New("light client is not initialized")
 
 // ForceInitLight forces initialization of the light client from the configured node
-func (c *Chain) ForceInitLight() error {
+func (c *CosmosChain) ForceInitLight() error {
 	db, df, err := c.NewLightDB()
 	if err != nil {
 		return err
@@ -328,7 +328,7 @@ func (c *Chain) ForceInitLight() error {
 
 // ValidateLightInitialized returns an error if the light client isn't initialized or there is a problem
 // interacting with the light client.
-func (c *Chain) ValidateLightInitialized() error {
+func (c *CosmosChain) ValidateLightInitialized() error {
 	height, err := c.GetLatestLightHeight()
 	if err != nil {
 		return fmt.Errorf("encountered issue with off chain light client for chain (%s): %v", c.ChainID, err)

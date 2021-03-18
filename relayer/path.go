@@ -211,7 +211,7 @@ type PathWithStatus struct {
 
 // QueryPathStatus returns an instance of the path struct with some attached data about
 // the current status of the path
-func (p *Path) QueryPathStatus(src, dst *Chain) *PathWithStatus {
+func (p *Path) QueryPathStatus(src, dst *CosmosChain) *PathWithStatus {
 	var (
 		err              error
 		eg               errgroup.Group

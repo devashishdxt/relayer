@@ -9,7 +9,7 @@ import (
 )
 
 // CreateOpenChannels runs the channel creation messages on timeout until they pass
-func (c *Chain) CreateOpenChannels(dst *Chain, maxRetries uint64, to time.Duration) (modified bool, err error) {
+func (c *CosmosChain) CreateOpenChannels(dst *CosmosChain, maxRetries uint64, to time.Duration) (modified bool, err error) {
 	// client and connection identifiers must be filled in
 	if err := ValidateConnectionPaths(c, dst); err != nil {
 		return modified, err
@@ -78,7 +78,7 @@ func (c *Chain) CreateOpenChannels(dst *Chain, maxRetries uint64, to time.Durati
 // states of two channel ends specified by the relayer configuration
 // file. The booleans return indicate if the message was successfully
 // executed and if this was the last handshake step.
-func ExecuteChannelStep(src, dst *Chain) (success, last, modified bool, err error) {
+func ExecuteChannelStep(src, dst *CosmosChain) (success, last, modified bool, err error) {
 	// variables needed to determine the current handshake step
 	var (
 		srcChan, dstChan *chantypes.QueryChannelResponse
@@ -232,7 +232,7 @@ func ExecuteChannelStep(src, dst *Chain) (success, last, modified bool, err erro
 // initialized. The PathEnds are updated upon a successful transaction.
 // NOTE: This function may need to be called twice if neither channel exists.
 func InitializeChannel(
-	src, dst *Chain, srcUpdateMsg, dstUpdateMsg sdk.Msg,
+	src, dst *CosmosChain, srcUpdateMsg, dstUpdateMsg sdk.Msg,
 ) (success, modified bool, err error) {
 	switch {
 
@@ -347,7 +347,7 @@ func InitializeChannel(
 
 // CloseChannel runs the channel closing messages on timeout until they pass
 // TODO: add max retries or something to this function
-func (c *Chain) CloseChannel(dst *Chain, to time.Duration) error {
+func (c *CosmosChain) CloseChannel(dst *CosmosChain, to time.Duration) error {
 
 	ticker := time.NewTicker(to)
 	for ; true; <-ticker.C {
@@ -380,7 +380,7 @@ func (c *Chain) CloseChannel(dst *Chain, to time.Duration) error {
 // CloseChannelStep returns the next set of messages for closing a channel with given
 // identifiers between chains src and dst. If the closing handshake hasn't started, then CloseChannelStep
 // will begin the handshake on the src chain
-func (c *Chain) CloseChannelStep(dst *Chain) (*RelayMsgs, error) {
+func (c *CosmosChain) CloseChannelStep(dst *CosmosChain) (*RelayMsgs, error) {
 	if _, _, err := UpdateLightClients(c, dst); err != nil {
 		return nil, err
 	}
@@ -476,7 +476,7 @@ func (c *Chain) CloseChannelStep(dst *Chain) (*RelayMsgs, error) {
 
 // FindMatchingChannel will determine if there already exists a channel between source and counterparty
 // that matches the parameters set in the relayer config.
-func FindMatchingChannel(source, counterparty *Chain) (string, bool) {
+func FindMatchingChannel(source, counterparty *CosmosChain) (string, bool) {
 	// TODO: add appropriate offset and limits, along with retries
 	channelsResp, err := source.QueryChannels(0, 1000)
 	if err != nil {
@@ -497,7 +497,7 @@ func FindMatchingChannel(source, counterparty *Chain) (string, bool) {
 }
 
 // IsMatchingChannel determines if given channel matches required conditions
-func IsMatchingChannel(source, counterparty *Chain, channel *chantypes.IdentifiedChannel) bool {
+func IsMatchingChannel(source, counterparty *CosmosChain, channel *chantypes.IdentifiedChannel) bool {
 	return channel.Ordering == source.PathEnd.GetOrder() &&
 		IsConnectionFound(channel.ConnectionHops, source.PathEnd.ConnectionID) &&
 		channel.Version == source.PathEnd.Version &&

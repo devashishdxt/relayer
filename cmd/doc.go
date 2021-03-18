@@ -122,7 +122,7 @@ type getChainsResWrapper struct {
 // swagger:response getChainResponse
 type getChainResWrapper struct {
 	// in:body
-	Chain *relayer.Chain
+	Chain *relayer.CosmosChain
 }
 
 // swagger:route POST /chains/{name} Chains addChain

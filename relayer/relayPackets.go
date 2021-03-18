@@ -10,8 +10,8 @@ import (
 )
 
 type relayPacket interface {
-	Msg(src, dst *Chain) (sdk.Msg, error)
-	FetchCommitResponse(src, dst *Chain) error
+	Msg(src, dst *CosmosChain) (sdk.Msg, error)
+	FetchCommitResponse(src, dst *CosmosChain) error
 	Data() []byte
 	Seq() uint64
 	Timeout() uint64
@@ -39,7 +39,7 @@ func (rp *relayMsgTimeout) Timeout() uint64 {
 	return rp.timeout
 }
 
-func (rp *relayMsgTimeout) FetchCommitResponse(src, dst *Chain) (err error) {
+func (rp *relayMsgTimeout) FetchCommitResponse(src, dst *CosmosChain) (err error) {
 	var dstRecvRes *chantypes.QueryPacketReceiptResponse
 	// retry getting commit response until it succeeds
 	if err = retry.Do(func() error {
@@ -72,7 +72,7 @@ func (rp *relayMsgTimeout) FetchCommitResponse(src, dst *Chain) (err error) {
 	return nil
 }
 
-func (rp *relayMsgTimeout) Msg(src, dst *Chain) (sdk.Msg, error) {
+func (rp *relayMsgTimeout) Msg(src, dst *CosmosChain) (sdk.Msg, error) {
 	if rp.dstRecvRes == nil {
 		return nil, fmt.Errorf("timeout packet [%s]seq{%d} has no associated proofs", src.ChainID, rp.seq)
 	}
@@ -129,7 +129,7 @@ func (rp *relayMsgRecvPacket) Timeout() uint64 {
 	return rp.timeout
 }
 
-func (rp *relayMsgRecvPacket) FetchCommitResponse(src, dst *Chain) (err error) {
+func (rp *relayMsgRecvPacket) FetchCommitResponse(src, dst *CosmosChain) (err error) {
 	var dstCommitRes *chantypes.QueryPacketCommitmentResponse
 	// retry getting commit response until it succeeds
 	if err = retry.Do(func() error {
@@ -162,7 +162,7 @@ func (rp *relayMsgRecvPacket) FetchCommitResponse(src, dst *Chain) (err error) {
 	return nil
 }
 
-func (rp *relayMsgRecvPacket) Msg(src, dst *Chain) (sdk.Msg, error) {
+func (rp *relayMsgRecvPacket) Msg(src, dst *CosmosChain) (sdk.Msg, error) {
 	if rp.dstComRes == nil {
 		return nil, fmt.Errorf("receive packet [%s]seq{%d} has no associated proofs", src.ChainID, rp.seq)
 	}
@@ -207,7 +207,7 @@ func (rp *relayMsgPacketAck) Timeout() uint64 {
 	return rp.timeout
 }
 
-func (rp *relayMsgPacketAck) Msg(src, dst *Chain) (sdk.Msg, error) {
+func (rp *relayMsgPacketAck) Msg(src, dst *CosmosChain) (sdk.Msg, error) {
 	if rp.dstComRes == nil {
 		return nil, fmt.Errorf("ack packet [%s]seq{%d} has no associated proofs", src.ChainID, rp.seq)
 	}
@@ -231,7 +231,7 @@ func (rp *relayMsgPacketAck) Msg(src, dst *Chain) (sdk.Msg, error) {
 	return msg, nil
 }
 
-func (rp *relayMsgPacketAck) FetchCommitResponse(src, dst *Chain) (err error) {
+func (rp *relayMsgPacketAck) FetchCommitResponse(src, dst *CosmosChain) (err error) {
 	var dstCommitRes *chantypes.QueryPacketAcknowledgementResponse
 	// retry getting commit response until it succeeds
 	if err = retry.Do(func() error {

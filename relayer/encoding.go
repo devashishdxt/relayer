@@ -17,7 +17,7 @@ import (
 )
 
 // MakeEncodingConfig returns the encoding txConfig for the chain
-func (c *Chain) MakeEncodingConfig() params.EncodingConfig {
+func (c *CosmosChain) MakeEncodingConfig() params.EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	interfaceRegistry := types.NewInterfaceRegistry()
 	marshaler := c.NewProtoCodec(interfaceRegistry, c.AccountPrefix)
@@ -49,7 +49,7 @@ var _ codec.Marshaler = &ProtoCodec{}
 var _ codec.ProtoCodecMarshaler = &ProtoCodec{}
 
 // NewProtoCodec returns a reference to a new ProtoCodec
-func (c *Chain) NewProtoCodec(interfaceRegistry types.InterfaceRegistry, accountPrefix string) *ProtoCodec {
+func (c *CosmosChain) NewProtoCodec(interfaceRegistry types.InterfaceRegistry, accountPrefix string) *ProtoCodec {
 	return &ProtoCodec{interfaceRegistry: interfaceRegistry, useContext: c.UseSDKContext}
 }
 

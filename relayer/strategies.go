@@ -16,11 +16,11 @@ var (
 // Strategy defines
 type Strategy interface {
 	GetType() string
-	HandleEvents(src, dst *Chain, events map[string][]string)
-	UnrelayedSequences(src, dst *Chain) (*RelaySequences, error)
-	UnrelayedAcknowledgements(src, dst *Chain) (*RelaySequences, error)
-	RelayPackets(src, dst *Chain, sp *RelaySequences) error
-	RelayAcknowledgements(src, dst *Chain, sp *RelaySequences) error
+	HandleEvents(src, dst *CosmosChain, events map[string][]string)
+	UnrelayedSequences(src, dst *CosmosChain) (*RelaySequences, error)
+	UnrelayedAcknowledgements(src, dst *CosmosChain) (*RelaySequences, error)
+	RelayPackets(src, dst *CosmosChain, sp *RelaySequences) error
+	RelayAcknowledgements(src, dst *CosmosChain, sp *RelaySequences) error
 }
 
 // MustGetStrategy returns the strategy and panics on error
@@ -49,7 +49,7 @@ type StrategyCfg struct {
 }
 
 // RunStrategy runs a given strategy
-func RunStrategy(src, dst *Chain, strategy Strategy) (func(), error) {
+func RunStrategy(src, dst *CosmosChain, strategy Strategy) (func(), error) {
 	doneChan := make(chan struct{})
 
 	// Fetch latest headers for each chain and store them in sync headers
@@ -75,7 +75,7 @@ func RunStrategy(src, dst *Chain, strategy Strategy) (func(), error) {
 	return func() { doneChan <- struct{}{} }, nil
 }
 
-func relayerListenLoop(src, dst *Chain, doneChan chan struct{}, strategy Strategy) {
+func relayerListenLoop(src, dst *CosmosChain, doneChan chan struct{}, strategy Strategy) {
 	var (
 		srcTxEvents, srcBlockEvents, dstTxEvents, dstBlockEvents <-chan ctypes.ResultEvent
 		srcTxCancel, srcBlockCancel, dstTxCancel, dstBlockCancel context.CancelFunc

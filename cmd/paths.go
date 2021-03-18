@@ -54,7 +54,7 @@ $ %s pth gen ibc-0 ibc-1 demo-path --unordered false --version ics20-2`, appName
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			var (
 				src, dst, pth          = args[0], args[1], args[2]
-				c                      map[string]*relayer.Chain
+				c                      map[string]*relayer.CosmosChain
 				eg                     errgroup.Group
 				srcClients, dstClients *clienttypes.QueryClientStatesResponse
 				srcConns, dstConns     *conntypes.QueryConnectionsResponse

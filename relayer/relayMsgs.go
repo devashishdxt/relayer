@@ -62,11 +62,11 @@ func (r *RelayMsgs) IsMaxTx(msgLen, txSize uint64) bool {
 
 // Send sends the messages with appropriate output
 // TODO: Parallelize? Maybe?
-func (r *RelayMsgs) Send(src, dst *Chain) {
+func (r *RelayMsgs) Send(src, dst *CosmosChain) {
 	r.SendWithController(src, dst, true)
 }
 
-func EncodeMsgs(c *Chain, msgs []sdk.Msg) []string {
+func EncodeMsgs(c *CosmosChain, msgs []sdk.Msg) []string {
 	outMsgs := make([]string, 0, len(msgs))
 	for _, msg := range msgs {
 		bz, err := c.Encoding.Amino.MarshalJSON(msg)
@@ -79,7 +79,7 @@ func EncodeMsgs(c *Chain, msgs []sdk.Msg) []string {
 	return outMsgs
 }
 
-func DecodeMsgs(c *Chain, msgs []string) []sdk.Msg {
+func DecodeMsgs(c *CosmosChain, msgs []string) []sdk.Msg {
 	outMsgs := make([]sdk.Msg, 0, len(msgs))
 	for _, msg := range msgs {
 		var sm sdk.Msg
@@ -93,7 +93,7 @@ func DecodeMsgs(c *Chain, msgs []string) []sdk.Msg {
 	return outMsgs
 }
 
-func (r *RelayMsgs) SendWithController(src, dst *Chain, useController bool) {
+func (r *RelayMsgs) SendWithController(src, dst *CosmosChain, useController bool) {
 	if useController && SendToController != nil {
 		action := &DeliverMsgsAction{
 			Src:       MarshalChain(src),

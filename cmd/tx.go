@@ -509,7 +509,7 @@ func upgradeChainCmd() *cobra.Command {
 }
 
 // Returns an error if a configured key for a given chain doesn't exist
-func ensureKeysExist(chains map[string]*relayer.Chain) (err error) {
+func ensureKeysExist(chains map[string]*relayer.CosmosChain) (err error) {
 	for _, v := range chains {
 		if _, err = v.GetAddress(); err != nil {
 			return
